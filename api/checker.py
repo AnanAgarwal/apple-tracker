@@ -75,42 +75,56 @@ def build_api_query():
     return "&".join([f"{k}={v}" for k, v in params.items()])
 
 
-# --- REPLACED CURL WITH PYTHON REQUESTS ---
+# --- PLAYWRIGHT BROWSER-BASED REQUEST ---
 
 def run_apple_request(query_string):
     full_url = f"{APPLE_API_URL}?{query_string}"
 
-    headers = BASE_HEADERS.copy()
-    headers["Cookie"] = LATEST_APPLE_COOKIES
-    headers["Referer"] = "https://www.apple.com/in/shop/buy-iphone/iphone-17/"
-
     try:
-        print(f"Fetching Apple API for {len(PRODUCTS)} items...")
+        from playwright.sync_api import sync_playwright
+
+        print(f"Fetching Apple API for {len(PRODUCTS)} items via Playwright...")
         print(f"URL: {full_url}")
-        r = requests.get(full_url, headers=headers, timeout=30)
 
-        print(f"Response Status: {r.status_code}")
-        print(f"Content-Type: {r.headers.get('content-type', 'unknown')}")
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+                locale="en-IN",
+            )
+            page = context.new_page()
 
-        # Cookie expired
-        if r.status_code in [401, 403]:
-            alert = "🚨 COOKIE EXPIRED — Update the Cookie immediately!"
-            print(alert)
-            send_telegram_message(TELEGRAM_PERSONAL_ID, alert)
-            return None
+            # Navigate to the API URL directly — browser handles TLS/cookies/JS
+            response = page.goto(full_url, wait_until="networkidle", timeout=30000)
 
-        # Apple WAF block
-        if r.status_code == 541 or r.status_code >= 400:
-            alert = f"🚨 Apple API returned HTTP {r.status_code}. Possible WAF block or endpoint change."
-            print(alert)
-            print(f"Response preview: {r.text[:200]}")
-            send_telegram_message(TELEGRAM_PERSONAL_ID, alert)
-            return None
+            status = response.status if response else 0
+            print(f"Response Status: {status}")
 
-        return r.text
+            if status in [401, 403]:
+                alert = "🚨 COOKIE EXPIRED — Update the Cookie immediately!"
+                print(alert)
+                send_telegram_message(TELEGRAM_PERSONAL_ID, alert)
+                browser.close()
+                return None
+
+            if status >= 400:
+                body_preview = page.content()[:200]
+                alert = f"🚨 Apple API returned HTTP {status}."
+                print(alert)
+                print(f"Response preview: {body_preview}")
+                send_telegram_message(TELEGRAM_PERSONAL_ID, alert)
+                browser.close()
+                return None
+
+            # Get the page body text (should be raw JSON)
+            body = page.inner_text("body")
+            browser.close()
+
+            print(f"Response length: {len(body)}")
+            return body
 
     except Exception as e:
-        print(f"Request Error: {e}")
+        print(f"Playwright Request Error: {e}")
         return None
 
 

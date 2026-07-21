@@ -22,7 +22,7 @@ PRODUCTS = [
 ]
 
 # Latest cookie (update manually when expired)
-LATEST_APPLE_COOKIES = "PASTE YOUR COOKIE HERE"
+LATEST_APPLE_COOKIES = "as_sfa=Mnxpbnxpbnx8ZW5fSU58Y29uc3VtZXJ8aW50ZXJuZXR8MHwwfDE; dssf=1; dssid2=bdcd8ff5-15f0-4954-a8b8-3fd92bf8b7db; as_uct=2; rtsid=%7BIN%3D%7Bt%3Da%3Bi%3DR756%3B%7D%3B%7D; as_loc=7580cd6d1f89f852ac6b820dbae9261b8ac41b7b6f7ba3929d5dc962a1a26da66749bd905cf09d98fa70aede24451434b0871e6cbc5c3e7f03e7e16c064a9b7f4510361571754645ff204626ae7afec4130a306e117e55f405389368b8a750cc; as_pcts=QRvQIP8vz4GGkL91Mf4SCvXBeC1osuAiHZqA57XV38vQzb-3SO4NQzc3qyA1E8EhD0uFyx3HBU3NZDmO0HQxVKFhNKmTiVwut-heyGhjkMZHGo; as_dc=ucp6; geo=IN; at_check=true; as_rumid=fe779ff1-467d-49a9-9334-63703ca09a29; shld_bt_m=RzMNVaowGDarmokgj7BsRw|1784665368|Zz2fiAqdjHEucn6cgxbUiA|mjWApRs7pNfvEdlHrH8a1UZxyKo; s_fid=6F702AE27CBBC376-19A87A292E8FAD4C; s_cc=true; s_vi=[CS]v1|352FDC7C9B936575-40000E3A4DA41CEC[CE]; sh_spksy=.; as_tex=~1~|668643:1:1786165140:IND|pcNsmh7MOEXWD/e7H0Ir6UllM2k0gh+LXQwB946faUg; shld_bt_ck=pIQ_YFQkJdWnHYawVUIEIQ|1784665383|Ib27BakBhooUy6eALp25yshaucBjNZtoD-Fj5Cg7_lfjUwSrmdWYCDwh9n6HA3YDkNrVUbF7jCSHjRa_rRjmLbnlg-u89oiotVdpSPkEuCJdaYIK1vf5cuUwd0xYCp_mjUyxG8DQKEsyvZdRGkD2IZ8k_wjTs_2x2eY50p68mH7et6CGGImfVZnPVqmuc-kqpYH7x4Ttz2qfqacYMI13SI3d2VhyQO-2RHSqToC8NC64bIIoMSWbt_KYKDJgFhoeEkKg8TIADe210GLrQGbHewQ3gKJSovOFV-bpkBlRQYgtThYndg3Y4O_0aS-BLERNTAVcsHoeraTh474KdzmUNBD51SU2vJaG2NZluksxY7ko9F6sblu9fTOsdPJ2apte|sB8EP8EYp7cq7GA5w8X2eBs_oD8; as_atb=1.0|MjAyNi0wNy0yMSAxMToyMzoxMA|4531b2e5ded9775cfdec9cf04b1b94187e49aa11; mbox=session#b262744776514a2ca6ca8da1741fc608#1784660049|PC#b262744776514a2ca6ca8da1741fc608.38_0#1784659989"
 
 # Apple API endpoint
 APPLE_API_URL = "https://www.apple.com/in/shop/fulfillment-messages"
@@ -63,6 +63,8 @@ def build_api_query():
     params = {
         "fae": "true",
         "little": "false",
+        "store": STORE_ID,
+        "location": "110017",
         "mts.0": "regular",
         "mts.1": "sticky",
         "fts": "true",

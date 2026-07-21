@@ -17,6 +17,12 @@ def trigger_check():
         # Run the core logic from checker.py (which handles Telegram messaging internally)
         msg = check_apple_availability()
         
+        if msg is None:
+            return jsonify({
+                "status": "error",
+                "message": "Apple API request failed. Check Render logs for details.",
+                "timestamp": datetime.now().isoformat()
+            }), 502
         
         # Return a simple success response
         return jsonify({

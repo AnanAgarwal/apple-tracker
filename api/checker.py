@@ -86,12 +86,24 @@ def run_apple_request(query_string):
 
     try:
         print(f"Fetching Apple API for {len(PRODUCTS)} items...")
+        print(f"URL: {full_url}")
         r = requests.get(full_url, headers=headers, timeout=30)
+
+        print(f"Response Status: {r.status_code}")
+        print(f"Content-Type: {r.headers.get('content-type', 'unknown')}")
 
         # Cookie expired
         if r.status_code in [401, 403]:
             alert = "🚨 COOKIE EXPIRED — Update the Cookie immediately!"
             print(alert)
+            send_telegram_message(TELEGRAM_PERSONAL_ID, alert)
+            return None
+
+        # Apple WAF block
+        if r.status_code == 541 or r.status_code >= 400:
+            alert = f"🚨 Apple API returned HTTP {r.status_code}. Possible WAF block or endpoint change."
+            print(alert)
+            print(f"Response preview: {r.text[:200]}")
             send_telegram_message(TELEGRAM_PERSONAL_ID, alert)
             return None
 
@@ -135,8 +147,9 @@ def check_apple_availability():
 
         try:
             data = json.loads(response)
-        except:
-            print("Invalid JSON from Apple.")
+        except Exception as e:
+            print(f"Invalid JSON from Apple: {e}")
+            print(f"Response preview: {response[:300]}")
             return None
 
     # Parse store

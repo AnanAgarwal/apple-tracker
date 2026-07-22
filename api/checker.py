@@ -5,7 +5,9 @@ from datetime import datetime, timedelta
 
 # --- CONFIGURATION ---
 
-MOCK_AVAILABILITY_MODE = False  # set True for testing
+# set True or set MOCK_MODE=true env var for testing/fallback
+MOCK_AVAILABILITY_MODE = os.environ.get("MOCK_MODE", "false").lower() == "true"
+
 
 # Telegram Credentials
 TELEGRAM_BOT_TOKEN = "8428862886:AAF0yZfs2z1b8UHkximmvobIbN5uWo67Xk8"

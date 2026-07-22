@@ -2,3 +2,4 @@ requests
 Flask
 gunicorn
 tls_client
+typing_extensions

@@ -297,6 +297,8 @@ export default function Dashboard({ user, token }) {
         isOpen={razorpayModalOpen}
         onClose={() => setRazorpayModalOpen(false)}
         onPaymentSuccess={handlePaymentSuccess}
+        token={token}
+        user={user}
       />
 
     </div>

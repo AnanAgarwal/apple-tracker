@@ -338,6 +338,7 @@ def create_sub():
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
 
+    key_id = os.environ.get("RAZORPAY_KEY_ID", "rzp_test_AppleTrackIndia999")
     return jsonify({
         "subscriptionId": f"sub_{int(time.time())}",
         "orderId": f"order_{int(time.time())}",
@@ -346,7 +347,7 @@ def create_sub():
         "planName": "Apple Stock Tracker Pro Monthly",
         "customerName": user['name'],
         "customerEmail": user['email'],
-        "keyId": "rzp_test_AppleTrackIndia999"
+        "keyId": key_id
     })
 
 @app.route('/api/payments/verify', methods=['POST'])
@@ -380,6 +381,29 @@ def verify_payment():
     save_db(db)
 
     return jsonify({"success": True, "user": user, "payment": pay_record})
+
+@app.route('/api/payments/webhook', methods=['POST'])
+def razorpay_webhook():
+    """
+    Webhook handler for Razorpay automated recurring subscription payments
+    """
+    data = request.json or {}
+    event = data.get('event', '')
+
+    if event in ['subscription.charged', 'payment.captured']:
+        payload = data.get('payload', {}).get('payment', {}).get('entity', {})
+        user_email = payload.get('email', '')
+
+        if user_email:
+            db = load_db()
+            for u in db.get('users', []):
+                if u['email'].lower() == user_email.lower():
+                    u['subscriptionStatus'] = 'active'
+                    u['subscriptionExpiresAt'] = (datetime.now() + timedelta(days=30)).isoformat()
+                    break
+            save_db(db)
+
+    return jsonify({"status": "received"}), 200
 
 @app.route('/api/admin/stats', methods=['GET'])
 def admin_stats():

@@ -1,6 +1,11 @@
+import os
 import requests
 import json
 from datetime import datetime, timedelta
+
+# Set Playwright browser path (must match build.sh)
+os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/render/project/src/.browsers")
+os.environ.setdefault("PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS", "1")
 
 # --- CONFIGURATION ---
 

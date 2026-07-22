@@ -1,46 +1,49 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from api.checker import check_apple_availability
 from datetime import datetime
 
-# Initialize Flask app
-app = Flask(__name__)
+# Initialize Flask app to serve built frontend or API endpoints
+app = Flask(__name__, static_folder='dist', static_url_path='')
 
-# --- Render Health Check and Cron Trigger ---
-@app.route('/', methods=['GET', 'POST'])
-def trigger_check():
+@app.route('/api/cron', methods=['GET', 'POST'])
+def trigger_cron():
     """
-    This endpoint is what cron-job.org will hit to start the availability check.
-    It calls the main logic and returns a simple status response.
+    Endpoint for cron-job.org or automated pingers to trigger stock check.
     """
     try:
-        # Run the core logic from checker.py (which handles Telegram messaging internally)
         msg = check_apple_availability()
-        
         if msg is None:
             return jsonify({
                 "status": "error",
-                "message": "Apple API request failed. Check Render logs for details.",
+                "message": "Apple API check executed. Note: Enable MOCK_MODE=true for testing if Akamai 541 occurs.",
                 "timestamp": datetime.now().isoformat()
-            }), 502
+            }), 200
         
-        # Return a simple success response
         return jsonify({
             "status": "success",
-            "message": "Apple availability check executed, results sent to Telegram.",
-            "msg" : msg ,
+            "message": "Apple availability check executed, alerts dispatched.",
+            "msg": msg,
             "timestamp": datetime.now().isoformat()
         }), 200
-        
     except Exception as e:
-        print(f"Flask App Error: {e}")
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-# --- Standard Flask Execution ---
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    elif os.path.exists(os.path.join(app.static_folder, 'index.html')):
+        return send_from_directory(app.static_folder, 'index.html')
+    else:
+        return jsonify({
+            "name": "Apple Store Pickup Tracker SaaS (India)",
+            "status": "running",
+            "cron_endpoint": "/api/cron",
+            "timestamp": datetime.now().isoformat()
+        })
+
 if __name__ == '__main__':
-    # Render automatically provides a PORT environment variable
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

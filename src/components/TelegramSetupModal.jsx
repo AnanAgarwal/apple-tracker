@@ -42,13 +42,25 @@ export default function TelegramSetupModal({ isOpen, onClose, telegramChatId, on
         <div className="space-y-3 bg-apple-dark/60 p-4 rounded-2xl border border-apple-border text-xs text-apple-textMuted">
           <div className="font-semibold text-white flex items-center space-x-2">
             <HelpCircle className="w-4 h-4 text-apple-accent" />
-            <span>How to get your Telegram Chat ID:</span>
+            <span>2 Quick Steps to Setup & Receive Alerts:</span>
           </div>
-          <ol className="list-decimal list-inside space-y-1.5 leading-relaxed">
-            <li>Open Telegram and search for <strong className="text-blue-400">@userinfobot</strong> or <strong className="text-blue-400">@raw_data_bot</strong>.</li>
-            <li>Press <strong>Start</strong> or send any text message.</li>
-            <li>The bot will reply with your numerical <strong>Id</strong> (e.g. <code className="text-emerald-400">123456789</code> or group <code className="text-emerald-400">-5015233395</code>).</li>
-            <li>Copy and paste it into the input field below.</li>
+          <ol className="list-decimal list-inside space-y-2 leading-relaxed">
+            <li>
+              Open Telegram and click <strong>Start</strong> on our Bot:{' '}
+              <a 
+                href="https://t.me/applepicckkbot" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="text-blue-400 font-semibold hover:underline inline-flex items-center space-x-1"
+              >
+                <span>@applepicckkbot</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <span className="block text-[11px] text-amber-400 mt-0.5">⚠️ Required: Telegram will block alerts if you don't click Start on the bot first!</span>
+            </li>
+            <li>
+              Search for <strong className="text-blue-400">@userinfobot</strong> to get your personal numerical <strong>Chat ID</strong> (or use group ID <code className="text-emerald-400">-5015233395</code>) and paste it below.
+            </li>
           </ol>
         </div>
 

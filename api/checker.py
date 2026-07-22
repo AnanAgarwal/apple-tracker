@@ -33,18 +33,29 @@ APPLE_API_URL = "https://www.apple.com/in/shop/fulfillment-messages"
 def send_telegram_message(chat_id, message):
     if "YOUR_REAL_TELEGRAM_BOT_TOKEN" in TELEGRAM_BOT_TOKEN:
         print("❌ Telegram token missing. Skipping Telegram.")
-        return
+        return False, "Telegram token missing"
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {"chat_id": chat_id, "text": message}
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": False
+    }
 
     try:
         r = requests.post(url, json=payload, timeout=10)
-        if not r.ok:
-            print(f"Telegram Error {r.status_code}: {r.text}")
-        r.raise_for_status()
+        data = r.json() if r.content else {}
+        if not r.ok or not data.get("ok"):
+            err_desc = data.get("description", r.text)
+            print(f"Telegram Error {r.status_code}: {err_desc}")
+            if "blocked" in err_desc.lower() or "chat not found" in err_desc.lower():
+                return False, "Please start the bot first! Open Telegram, search @applepicckkbot and click Start, then try again."
+            return False, f"Telegram API error: {err_desc}"
+        return True, "Message sent successfully"
     except Exception as e:
         print(f"Telegram send error: {e}")
+        return False, str(e)
 
 
 # --- TLS CLIENT REQUEST (bypasses Apple WAF) ---

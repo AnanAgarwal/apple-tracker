@@ -312,7 +312,10 @@ def test_telegram():
     )
 
     try:
-        send_telegram_message(user['telegramChatId'], msg)
+        ok, res_msg = send_telegram_message(user['telegramChatId'], msg)
+        if not ok:
+            return jsonify({"error": res_msg}), 400
+
         db = load_db()
         db['notifications'].insert(0, {
             "id": f"notif_test_{int(time.time())}",

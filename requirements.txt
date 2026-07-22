@@ -1,4 +1,4 @@
 requests
 Flask
 gunicorn
-playwright
+tls_client

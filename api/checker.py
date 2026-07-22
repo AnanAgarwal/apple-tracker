@@ -49,6 +49,8 @@ def send_telegram_message(chat_id, message):
         if not r.ok or not data.get("ok"):
             err_desc = data.get("description", r.text)
             print(f"Telegram Error {r.status_code}: {err_desc}")
+            if "kicked" in err_desc.lower():
+                return False, f"Bot was kicked from group chat ({chat_id}). Please re-add @applepicckkbot to the group as admin."
             if "blocked" in err_desc.lower() or "chat not found" in err_desc.lower():
                 return False, "Please start the bot first! Open Telegram, search @applepicckkbot and click Start, then try again."
             return False, f"Telegram API error: {err_desc}"

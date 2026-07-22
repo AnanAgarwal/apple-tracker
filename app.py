@@ -28,7 +28,7 @@ def load_db():
                 "name": "Admin Manager",
                 "password": "admin",
                 "role": "admin",
-                "telegramChatId": "-5015233395",
+                "telegramChatId": "",
                 "subscriptionStatus": "active",
                 "subscriptionExpiresAt": "2026-12-31T23:59:59.000Z",
                 "createdAt": datetime.now().isoformat()
@@ -39,7 +39,7 @@ def load_db():
                 "name": "Rahul Sharma",
                 "password": "demo",
                 "role": "user",
-                "telegramChatId": "-5015233395",
+                "telegramChatId": "",
                 "subscriptionStatus": "active",
                 "subscriptionExpiresAt": (datetime.now() + timedelta(days=30)).isoformat(),
                 "createdAt": datetime.now().isoformat()

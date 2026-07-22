@@ -6,6 +6,8 @@ import AdminPanel from './components/AdminPanel.jsx';
 import PublicStatusPage from './components/PublicStatusPage.jsx';
 import AuthModal from './components/AuthModal.jsx';
 
+import { safeJsonFetch } from './utils/api.js';
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('apple_track_token') || '');
@@ -19,23 +21,17 @@ export default function App() {
         setInitializing(false);
         return;
       }
-      try {
-        const res = await fetch('/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          // Expired token
-          localStorage.removeItem('apple_track_token');
-          setToken('');
-        }
-      } catch (e) {
-        console.error('Session restore failed:', e);
-      } finally {
-        setInitializing(false);
+      const { ok, data } = await safeJsonFetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (ok && data?.user) {
+        setUser(data.user);
+      } else {
+        // Expired or invalid token
+        localStorage.removeItem('apple_track_token');
+        setToken('');
       }
+      setInitializing(false);
     };
     restoreSession();
   }, [token]);

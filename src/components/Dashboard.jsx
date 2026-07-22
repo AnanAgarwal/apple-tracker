@@ -4,6 +4,8 @@ import DeviceStoreSelector from './DeviceStoreSelector.jsx';
 import TelegramSetupModal from './TelegramSetupModal.jsx';
 import RazorpayModal from './RazorpayModal.jsx';
 
+import { safeJsonFetch } from '../utils/api.js';
+
 export default function Dashboard({ user, token }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,15 +21,15 @@ export default function Dashboard({ user, token }) {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/trackers', {
+      const { ok, data: json } = await safeJsonFetch('/api/trackers', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const json = await res.json();
-      setData(json);
-
-      if (json.tracker) {
-        setSelectedStores(json.tracker.selectedStores || ['R756']);
-        setSelectedSkus(json.tracker.selectedSkus || ['MG6K4HN/A']);
+      if (ok && json) {
+        setData(json);
+        if (json.tracker) {
+          setSelectedStores(json.tracker.selectedStores || ['R756']);
+          setSelectedSkus(json.tracker.selectedSkus || ['MG6K4HN/A']);
+        }
       }
     } catch (e) {
       console.error('Failed to fetch tracker dashboard data:', e);
@@ -55,7 +57,7 @@ export default function Dashboard({ user, token }) {
   const handleSavePreferences = async () => {
     try {
       setSaving(true);
-      await fetch('/api/trackers/update', {
+      await safeJsonFetch('/api/trackers/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +74,7 @@ export default function Dashboard({ user, token }) {
   };
 
   const handleSaveChatId = async (chatId) => {
-    await fetch('/api/telegram/update', {
+    await safeJsonFetch('/api/telegram/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,16 +88,15 @@ export default function Dashboard({ user, token }) {
   const handleSendTestMsg = async () => {
     setTesting(true);
     try {
-      const res = await fetch('/api/telegram/test', {
+      const { ok, data: json, error } = await safeJsonFetch('/api/telegram/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         }
       });
-      const json = await res.json();
       await fetchDashboardData();
-      return json;
+      return ok ? json : { success: false, error: error || json?.error || 'Failed' };
     } catch (e) {
       return { success: false, error: e.message };
     } finally {
@@ -104,7 +105,7 @@ export default function Dashboard({ user, token }) {
   };
 
   const handlePaymentSuccess = async (paymentDetails) => {
-    await fetch('/api/payments/verify', {
+    await safeJsonFetch('/api/payments/verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

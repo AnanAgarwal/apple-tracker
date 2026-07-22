@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Smartphone, Mail, Lock, User, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 
+import { safeJsonFetch } from '../utils/api.js';
+
 export default function AuthModal({ initialMode = 'login', onAuthSuccess, onCancel }) {
   const [mode, setMode] = useState(initialMode); // 'login' or 'signup'
   const [name, setName] = useState('');
@@ -18,15 +20,14 @@ export default function AuthModal({ initialMode = 'login', onAuthSuccess, onCanc
     const payload = mode === 'signup' ? { name, email, password } : { email, password };
 
     try {
-      const res = await fetch(endpoint, {
+      const { ok, data, error: fetchErr } = await safeJsonFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Authentication failed');
+      if (!ok || !data) {
+        throw new Error(data?.error || fetchErr || 'Authentication failed');
       }
 
       onAuthSuccess(data.user, data.token);

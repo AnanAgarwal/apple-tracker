@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, TrendingUp, Users, Bell, DollarSign, RefreshCw, Zap, CheckCircle2, AlertTriangle, UserCheck, UserX } from 'lucide-react';
 
+import { safeJsonFetch } from '../utils/api.js';
+
 export default function AdminPanel({ token }) {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -12,18 +14,14 @@ export default function AdminPanel({ token }) {
     try {
       setLoading(true);
       const [statsRes, usersRes, notifRes] = await Promise.all([
-        fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/admin/notifications', { headers: { Authorization: `Bearer ${token}` } })
+        safeJsonFetch('/api/admin/stats', { headers: { Authorization: `Bearer ${token}` } }),
+        safeJsonFetch('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } }),
+        safeJsonFetch('/api/admin/notifications', { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
-      const statsData = await statsRes.json();
-      const usersData = await usersRes.json();
-      const notifData = await notifRes.json();
-
-      setStats(statsData);
-      setUsers(usersData.users || []);
-      setNotifications(notifData.notifications || []);
+      if (statsRes.ok) setStats(statsRes.data);
+      if (usersRes.ok) setUsers(usersRes.data.users || []);
+      if (notifRes.ok) setNotifications(notifRes.data.notifications || []);
     } catch (e) {
       console.error('Failed to load admin data:', e);
     } finally {
@@ -38,7 +36,7 @@ export default function AdminPanel({ token }) {
   const handleSimulateRestock = async (storeId, sku, status) => {
     setSimulationStatus(`Triggering ${status} state...`);
     try {
-      const res = await fetch('/api/admin/simulate-restock', {
+      const { ok, data } = await safeJsonFetch('/api/admin/simulate-restock', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,8 +44,9 @@ export default function AdminPanel({ token }) {
         },
         body: JSON.stringify({ storeId, sku, status })
       });
-      const data = await res.json();
-      setSimulationStatus(data.message);
+      if (ok && data) {
+        setSimulationStatus(data.message);
+      }
       fetchAdminData();
     } catch (e) {
       setSimulationStatus('Simulation failed');
@@ -56,7 +55,7 @@ export default function AdminPanel({ token }) {
 
   const handleExtendUser = async (userId) => {
     try {
-      await fetch('/api/admin/toggle-user', {
+      await safeJsonFetch('/api/admin/toggle-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

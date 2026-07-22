@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Radio, MapPin, Smartphone, RefreshCw, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
+import { safeJsonFetch } from '../utils/api.js';
+
 export default function PublicStatusPage({ onGetStarted }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -8,9 +10,10 @@ export default function PublicStatusPage({ onGetStarted }) {
   const fetchPublicStatus = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/public/status');
-      const json = await res.json();
-      setData(json);
+      const { ok, data: json } = await safeJsonFetch('/api/public/status');
+      if (ok && json) {
+        setData(json);
+      }
     } catch (e) {
       console.error('Failed to load public status:', e);
     } finally {
